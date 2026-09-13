@@ -1,4 +1,7 @@
 package com.fiap.aria_backend.model;
 
-public class UserRole {
+public enum UserRole {
+    OPERADOR,
+    GESTOR,
+    LIDER
 }
