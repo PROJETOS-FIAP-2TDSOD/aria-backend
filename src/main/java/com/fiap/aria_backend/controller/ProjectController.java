@@ -3,9 +3,11 @@ package com.fiap.aria_backend.controller;
 import com.fiap.aria_backend.dto.ProjectRequestDto;
 import com.fiap.aria_backend.dto.ProjectResponseDto;
 import com.fiap.aria_backend.dto.ProjectUpdateProgressDto;
+import com.fiap.aria_backend.security.AuthenticatedUser;
 import com.fiap.aria_backend.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,9 +17,11 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final AuthenticatedUser authenticatedUser;
 
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectService projectService, AuthenticatedUser authenticatedUser) {
         this.projectService = projectService;
+        this.authenticatedUser = authenticatedUser;
     }
 
     @GetMapping
@@ -32,23 +36,25 @@ public class ProjectController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('GESTOR')")
     public ProjectResponseDto create(@Valid @RequestBody ProjectRequestDto request) {
-        // TODO: trocar pelo id do gestor autenticado via JWT
-        return projectService.create(request, "6aa6dc5ae213fa639420a704");
+        return projectService.create(request, authenticatedUser.getCurrentUserId());
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('GESTOR')")
     public ProjectResponseDto update(@PathVariable String id, @Valid @RequestBody ProjectRequestDto request) {
         return projectService.update(id, request);
     }
 
     @PatchMapping("/{id}/progress")
+    @PreAuthorize("hasRole('GESTOR')")
     public ProjectResponseDto updateProgress(@PathVariable String id, @RequestBody ProjectUpdateProgressDto dto) {
-        // TODO: restringir só a GESTOR quando JWT/roles estiverem prontos
         return projectService.updateProgress(id, dto);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('GESTOR')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id) {
         projectService.delete(id);

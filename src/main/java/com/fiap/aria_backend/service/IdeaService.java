@@ -1,6 +1,7 @@
 package com.fiap.aria_backend.service;
 
 import com.fiap.aria_backend.dto.*;
+import com.fiap.aria_backend.exception.AccessDeniedException;
 import com.fiap.aria_backend.model.Idea;
 import com.fiap.aria_backend.model.IdeaCategory;
 import com.fiap.aria_backend.model.IdeaStatus;
@@ -37,8 +38,12 @@ public class IdeaService {
         return toResponse(idea);
     }
 
-    // TODO: authorId deve vir do usuário autenticado (JWT), não de parâmetro solto —
-    // ajustar assim que a segurança JWT (feat/spring-security-jwt) estiver pronta.
+    public List<IdeaResponseDto> listByAuthor(String authorId) {
+        return ideaRepository.findByAuthorId(authorId).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public IdeaResponseDto create(IdeaRequestDto request, String authorId) {
         Idea idea = Idea.builder()
                 .title(request.getTitle())
@@ -56,9 +61,13 @@ public class IdeaService {
         return toResponse(ideaRepository.save(idea));
     }
 
-    public IdeaResponseDto update(String id, IdeaRequestDto request) {
+    public IdeaResponseDto update(String id, IdeaRequestDto request, String currentUserId) {
         Idea idea = ideaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ideia não encontrada: " + id));
+
+        if (!idea.getAuthorId().equals(currentUserId)) {
+            throw new AccessDeniedException("Você só pode editar as próprias ideias.");
+        }
 
         idea.setTitle(request.getTitle());
         idea.setCategory(IdeaCategory.valueOf(request.getCategory()));
@@ -84,7 +93,14 @@ public class IdeaService {
         return toResponse(ideaRepository.save(idea));
     }
 
-    public void delete(String id) {
+    public void delete(String id, String currentUserId) {
+        Idea idea = ideaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Ideia não encontrada: " + id));
+
+        if (!idea.getAuthorId().equals(currentUserId)) {
+            throw new AccessDeniedException("Você só pode excluir as próprias ideias.");
+        }
+
         ideaRepository.deleteById(id);
     }
 

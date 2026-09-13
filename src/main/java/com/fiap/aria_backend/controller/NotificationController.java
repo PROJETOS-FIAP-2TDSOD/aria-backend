@@ -2,6 +2,7 @@ package com.fiap.aria_backend.controller;
 
 import com.fiap.aria_backend.dto.NotificationRequestDto;
 import com.fiap.aria_backend.dto.NotificationResponseDto;
+import com.fiap.aria_backend.security.AuthenticatedUser;
 import com.fiap.aria_backend.service.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -14,16 +15,16 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final AuthenticatedUser authenticatedUser;
 
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(NotificationService notificationService, AuthenticatedUser authenticatedUser) {
         this.notificationService = notificationService;
+        this.authenticatedUser = authenticatedUser;
     }
 
-    // TODO: userId deve vir do usuário autenticado (JWT), não de query param —
-    // manter como query param só até a branch de segurança existir.
     @GetMapping
-    public List<NotificationResponseDto> listByUser(@RequestParam String userId) {
-        return notificationService.listByUser(userId);
+    public List<NotificationResponseDto> listMyNotifications() {
+        return notificationService.listByUser(authenticatedUser.getCurrentUserId());
     }
 
     @PostMapping
@@ -38,8 +39,8 @@ public class NotificationController {
     }
 
     @PatchMapping("/read-all")
-    public void markAllAsRead(@RequestParam String userId) {
-        notificationService.markAllAsRead(userId);
+    public void markAllAsRead() {
+        notificationService.markAllAsRead(authenticatedUser.getCurrentUserId());
     }
 
     @DeleteMapping("/{id}")

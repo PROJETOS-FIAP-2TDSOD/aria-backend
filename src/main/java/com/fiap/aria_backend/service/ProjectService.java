@@ -35,7 +35,6 @@ public class ProjectService {
         return toResponse(getOrThrow(id));
     }
 
-    // TODO: managerId deve vir do usuário autenticado (JWT) assim que estiver pronto
     public ProjectResponseDto create(ProjectRequestDto request, String managerId) {
         List<ProjectTeamMember> teamMembers = request.getTeamMembers().stream()
                 .map(t -> ProjectTeamMember.builder().userId(t.getUserId()).projectRole(t.getProjectRole()).build())
