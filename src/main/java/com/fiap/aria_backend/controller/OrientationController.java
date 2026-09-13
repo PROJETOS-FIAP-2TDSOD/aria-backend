@@ -2,9 +2,11 @@ package com.fiap.aria_backend.controller;
 
 import com.fiap.aria_backend.dto.OrientationRequestDto;
 import com.fiap.aria_backend.dto.OrientationResponseDto;
+import com.fiap.aria_backend.security.AuthenticatedUser;
 import com.fiap.aria_backend.service.OrientationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,9 +16,11 @@ import java.util.List;
 public class OrientationController {
 
     private final OrientationService orientationService;
+    private final AuthenticatedUser authenticatedUser;
 
-    public OrientationController(OrientationService orientationService) {
+    public OrientationController(OrientationService orientationService, AuthenticatedUser authenticatedUser) {
         this.orientationService = orientationService;
+        this.authenticatedUser = authenticatedUser;
     }
 
     @GetMapping
@@ -31,21 +35,21 @@ public class OrientationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('LIDER')")
     public OrientationResponseDto create(@Valid @RequestBody OrientationRequestDto request) {
-        // TODO: trocar pelo id do líder autenticado via JWT; restringir esse endpoint a LIDER
-        return orientationService.create(request, "6aa6dc5ae213fa639420a704");
+        return orientationService.create(request, authenticatedUser.getCurrentUserId());
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('LIDER')")
     public OrientationResponseDto update(@PathVariable String id, @Valid @RequestBody OrientationRequestDto request) {
-        // TODO: restringir a LIDER quando JWT/roles estiverem prontos
         return orientationService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('LIDER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id) {
-        // TODO: restringir a LIDER quando JWT/roles estiverem prontos
         orientationService.delete(id);
     }
 }
