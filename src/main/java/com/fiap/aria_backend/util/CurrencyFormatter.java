@@ -8,13 +8,14 @@ public final class CurrencyFormatter {
     }
 
     public static String toCompactReais(double valueReais) {
-        if (valueReais <= 0) return "R$ 0,00";
+        if (valueReais == 0) return "R$ 0,00";
+        String sign = valueReais < 0 ? "-" : "";
         double abs = Math.abs(valueReais);
         if (abs >= 1_000_000) {
-            return "R$ " + new DecimalFormat("#,##0.#").format(abs / 1_000_000.0) + "M";
+            return sign + "R$ " + new DecimalFormat("#,##0.#").format(abs / 1_000_000.0) + "M";
         } else if (abs >= 1_000) {
-            return "R$ " + new DecimalFormat("#,##0.#").format(abs / 1_000.0) + "k";
+            return sign + "R$ " + new DecimalFormat("#,##0.#").format(abs / 1_000.0) + "k";
         }
-        return "R$ " + new DecimalFormat("#,##0.00").format(abs);
+        return sign + "R$ " + new DecimalFormat("#,##0.00").format(abs);
     }
 }
