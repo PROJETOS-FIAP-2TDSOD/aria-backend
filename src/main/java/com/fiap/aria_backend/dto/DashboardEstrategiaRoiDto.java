@@ -1,0 +1,21 @@
+package com.fiap.aria_backend.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class DashboardEstrategiaRoiDto {
+    private String orientationId;
+    private String titulo;
+    private String categoria;
+    private int ideasCount;
+    private int projetosAtivos;
+    private String roiCompact;
+    private int roiDeltaPercent;
+    private float progresso;
+}
