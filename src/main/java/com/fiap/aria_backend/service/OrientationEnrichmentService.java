@@ -3,9 +3,10 @@ package com.fiap.aria_backend.service;
 import com.fiap.aria_backend.model.*;
 import com.fiap.aria_backend.repository.IdeaRepository;
 import com.fiap.aria_backend.repository.ProjectRepository;
+import com.fiap.aria_backend.util.CurrencyFormatter;
+import com.fiap.aria_backend.util.RoiAnalytics;
 import org.springframework.stereotype.Service;
 
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,9 +42,7 @@ public class OrientationEnrichmentService {
                 ? 0f
                 : Math.min(1f, Math.max(0f, (float) approved / alignedIdeas.size()));
 
-        double totalRoi = alignedProjects.stream()
-                .mapToDouble(p -> p.getActualRoi() != null ? p.getActualRoi() : p.getEstimatedRoi())
-                .sum();
+        double totalRoi = RoiAnalytics.totalRoi(alignedProjects);
 
         LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
         int ideasDelta = (int) alignedIdeas.stream()
@@ -54,45 +53,16 @@ public class OrientationEnrichmentService {
                 .filter(p -> p.getStatus() == ProjectStatus.EM_ANDAMENTO)
                 .count();
 
-        int roiDeltaPercent = calculateRoiDeltaPercent(alignedProjects);
+        int roiDeltaPercent = RoiAnalytics.deltaPercentLast30Days(alignedProjects);
 
         return new EnrichedMetrics(
                 alignedIdeas.size(),
                 ideasDelta,
                 projectsActive,
-                formatCurrencyCompact(totalRoi),
+                CurrencyFormatter.toCompactReais(totalRoi),
                 roiDeltaPercent,
                 progress
         );
-    }
-
-    private int calculateRoiDeltaPercent(List<Project> alignedProjects) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime cutoff = now.minusDays(30);
-
-        double recent = alignedProjects.stream()
-                .filter(p -> p.getStartDate().atStartOfDay().isAfter(cutoff))
-                .mapToDouble(p -> p.getActualRoi() != null ? p.getActualRoi() : p.getEstimatedRoi())
-                .sum();
-
-        double older = alignedProjects.stream()
-                .filter(p -> p.getStartDate().atStartOfDay().isBefore(cutoff))
-                .mapToDouble(p -> p.getActualRoi() != null ? p.getActualRoi() : p.getEstimatedRoi())
-                .sum();
-
-        if (older <= 0) return recent <= 0 ? 0 : 100;
-        return (int) Math.round(((recent - older) / older) * 100);
-    }
-
-    private String formatCurrencyCompact(double valueReais) {
-        if (valueReais <= 0) return "R$ 0,00";
-        double abs = Math.abs(valueReais);
-        if (abs >= 1_000_000) {
-            return "R$ " + new DecimalFormat("#,##0.#").format(abs / 1_000_000.0) + "M";
-        } else if (abs >= 1_000) {
-            return "R$ " + new DecimalFormat("#,##0.#").format(abs / 1_000.0) + "k";
-        }
-        return "R$ " + new DecimalFormat("#,##0.00").format(abs);
     }
 
     public record EnrichedMetrics(
