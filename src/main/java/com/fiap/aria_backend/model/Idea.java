@@ -41,6 +41,13 @@ public class Idea {
 
     private Double estimatedRoi;
 
+    // Preenchidos pelo endpoint /ai-score — sugestao da IA, nao substitui score/gestorFeedback
+    private Integer aiScore;
+
+    private String aiJustification;
+
+    private LocalDateTime aiAnalyzedAt;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

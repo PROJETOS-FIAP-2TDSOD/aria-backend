@@ -19,11 +19,14 @@ public class IdeaService {
     private final IdeaRepository ideaRepository;
     private final UserRepository userRepository;
     private final IdeaMapper ideaMapper;
+    private final GeminiIdeaScoringService geminiIdeaScoringService;
 
-    public IdeaService(IdeaRepository ideaRepository, UserRepository userRepository, IdeaMapper ideaMapper) {
+    public IdeaService(IdeaRepository ideaRepository, UserRepository userRepository, IdeaMapper ideaMapper,
+                       GeminiIdeaScoringService geminiIdeaScoringService) {
         this.ideaRepository = ideaRepository;
         this.userRepository = userRepository;
         this.ideaMapper = ideaMapper;
+        this.geminiIdeaScoringService = geminiIdeaScoringService;
     }
 
     public List<IdeaResponseDto> listAll() {
@@ -88,6 +91,21 @@ public class IdeaService {
         idea.setStatus(IdeaStatus.valueOf(reviewDto.getStatus()));
         idea.setScore(reviewDto.getScore());
         idea.setGestorFeedback(reviewDto.getGestorFeedback());
+        idea.setUpdatedAt(LocalDateTime.now());
+
+        return toResponse(ideaRepository.save(idea));
+    }
+
+    // Ação exclusiva do GESTOR — sugestão de pontuação via IA (nao substitui review())
+    public IdeaResponseDto scoreWithAi(String id) {
+        Idea idea = ideaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Ideia não encontrada: " + id));
+
+        GeminiIdeaScoringService.AiScoreResult result = geminiIdeaScoringService.scoreIdea(idea);
+
+        idea.setAiScore(result.score());
+        idea.setAiJustification(result.justification());
+        idea.setAiAnalyzedAt(LocalDateTime.now());
         idea.setUpdatedAt(LocalDateTime.now());
 
         return toResponse(ideaRepository.save(idea));

@@ -24,4 +24,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleInconsistentState(IllegalStateException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
     }
+
+    @ExceptionHandler(AiServiceException.class)
+    public ResponseEntity<Map<String, String>> handleAiServiceException(AiServiceException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("error", ex.getMessage()));
+    }
 }
