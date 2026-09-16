@@ -6,13 +6,17 @@ import com.fiap.aria_backend.model.Idea;
 import com.fiap.aria_backend.model.IdeaCategory;
 import com.fiap.aria_backend.model.IdeaStatus;
 import com.fiap.aria_backend.model.User;
+import com.fiap.aria_backend.model.UserRole;
 import com.fiap.aria_backend.repository.IdeaRepository;
 import com.fiap.aria_backend.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class IdeaService {
 
@@ -124,7 +128,20 @@ public class IdeaService {
 
     private IdeaResponseDto toResponse(Idea idea) {
         User author = userRepository.findById(idea.getAuthorId())
-                .orElseThrow(() -> new IllegalStateException("Autor não encontrado para a ideia: " + idea.getId()));
+                .orElseGet(() -> deletedUserPlaceholder(idea.getAuthorId(), idea.getId()));
         return ideaMapper.toResponseDto(idea, author);
+    }
+
+    private User deletedUserPlaceholder(String authorId, String ideaId) {
+        log.warn("Autor {} nao encontrado para a ideia {} - usando placeholder.", authorId, ideaId);
+        return User.builder()
+                .id(authorId)
+                .name("Usuário removido")
+                .email("")
+                .role(UserRole.OPERADOR)
+                .department("")
+                .points(0)
+                .badges(new ArrayList<>())
+                .build();
     }
 }
