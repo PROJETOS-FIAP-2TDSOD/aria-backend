@@ -24,7 +24,7 @@ public class GeminiIdeaScoringService {
 
     public GeminiIdeaScoringService(
             @Value("${gemini.api-key:}") String apiKey,
-            @Value("${gemini.model:gemini-2.0-flash}") String model,
+            @Value("${gemini.model:gemini-3.6-flash}") String model,
             ObjectMapper objectMapper
     ) {
         this.apiKey = apiKey;
