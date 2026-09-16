@@ -35,7 +35,7 @@ public class NotificationController {
 
     @PatchMapping("/{id}/read")
     public NotificationResponseDto markAsRead(@PathVariable String id) {
-        return notificationService.markAsRead(id);
+        return notificationService.markAsRead(id, authenticatedUser.getCurrentUserId());
     }
 
     @PatchMapping("/read-all")
@@ -46,6 +46,6 @@ public class NotificationController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id) {
-        notificationService.delete(id);
+        notificationService.delete(id, authenticatedUser.getCurrentUserId());
     }
 }

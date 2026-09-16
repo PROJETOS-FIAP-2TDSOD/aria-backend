@@ -3,6 +3,7 @@ package com.fiap.aria_backend.service;
 import com.fiap.aria_backend.dto.NotificationMapper;
 import com.fiap.aria_backend.dto.NotificationRequestDto;
 import com.fiap.aria_backend.dto.NotificationResponseDto;
+import com.fiap.aria_backend.exception.AccessDeniedException;
 import com.fiap.aria_backend.model.Notification;
 import com.fiap.aria_backend.model.NotificationType;
 import com.fiap.aria_backend.repository.NotificationRepository;
@@ -43,9 +44,14 @@ public class NotificationService {
         return notificationMapper.toResponseDto(notificationRepository.save(notification));
     }
 
-    public NotificationResponseDto markAsRead(String id) {
+    public NotificationResponseDto markAsRead(String id, String currentUserId) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Notificação não encontrada: " + id));
+
+        if (!notification.getUserId().equals(currentUserId)) {
+            throw new AccessDeniedException("Você só pode marcar como lidas as próprias notificações.");
+        }
+
         notification.setRead(true);
         return notificationMapper.toResponseDto(notificationRepository.save(notification));
     }
@@ -56,7 +62,14 @@ public class NotificationService {
         notificationRepository.saveAll(notifications);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String currentUserId) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Notificação não encontrada: " + id));
+
+        if (!notification.getUserId().equals(currentUserId)) {
+            throw new AccessDeniedException("Você só pode excluir as próprias notificações.");
+        }
+
         notificationRepository.deleteById(id);
     }
 }
