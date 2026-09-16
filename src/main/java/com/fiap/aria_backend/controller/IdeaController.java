@@ -54,6 +54,12 @@ public class IdeaController {
         return ideaService.review(id, reviewDto);
     }
 
+    @PostMapping("/{id}/ai-score")
+    @PreAuthorize("hasRole('GESTOR')")
+    public IdeaResponseDto scoreWithAi(@PathVariable String id) {
+        return ideaService.scoreWithAi(id);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id) {
