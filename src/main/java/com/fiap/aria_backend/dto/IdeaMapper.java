@@ -21,6 +21,9 @@ public class IdeaMapper {
                 .score(idea.getScore())
                 .gestorFeedback(idea.getGestorFeedback())
                 .estimatedRoi(idea.getEstimatedRoi())
+                .aiScore(idea.getAiScore())
+                .aiJustification(idea.getAiJustification())
+                .aiAnalyzedAt(idea.getAiAnalyzedAt() != null ? idea.getAiAnalyzedAt().toString() : null)
                 .createdAt(idea.getCreatedAt().toString())
                 .updatedAt(idea.getUpdatedAt().toString())
                 .build();

@@ -22,6 +22,9 @@ public class IdeaResponseDto {
     private Integer score;
     private String gestorFeedback;
     private Double estimatedRoi;
+    private Integer aiScore;
+    private String aiJustification;
+    private String aiAnalyzedAt;
     private String createdAt;
     private String updatedAt;
 }
