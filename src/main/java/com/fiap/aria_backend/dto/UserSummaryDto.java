@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,4 +20,6 @@ public class UserSummaryDto {
     private String avatarInitials;
     private int totalIdeas;
     private int approvedIdeas;
+    private int points;
+    private List<String> badges;
 }

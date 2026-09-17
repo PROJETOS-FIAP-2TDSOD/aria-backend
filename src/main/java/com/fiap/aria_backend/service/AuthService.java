@@ -1,10 +1,10 @@
 package com.fiap.aria_backend.service;
 
 import com.fiap.aria_backend.dto.AuthResponseDto;
+import com.fiap.aria_backend.dto.IdeaMapper;
 import com.fiap.aria_backend.dto.LoginRequestDto;
 import com.fiap.aria_backend.dto.RecoverPasswordRequestDto;
 import com.fiap.aria_backend.dto.RegisterRequestDto;
-import com.fiap.aria_backend.dto.UserSummaryDto;
 import com.fiap.aria_backend.model.User;
 import com.fiap.aria_backend.model.UserRole;
 import com.fiap.aria_backend.repository.UserRepository;
@@ -31,14 +31,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final IdeaMapper ideaMapper;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager, JwtService jwtService) {
+                       AuthenticationManager authenticationManager, JwtService jwtService, IdeaMapper ideaMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.ideaMapper = ideaMapper;
     }
 
     public AuthResponseDto register(RegisterRequestDto request) {
@@ -83,8 +85,6 @@ public class AuthService {
             user.setPasswordHash(passwordEncoder.encode(tempPassword));
             userRepository.save(user);
 
-            // Sem servico de e-mail configurado nesta sprint: o "envio" e simulado via log.
-            // Em producao, tempPassword seria enviado por e-mail e jamais logado em texto puro.
             log.info("[recover-password] Senha temporaria gerada para {}: {}", user.getEmail(), tempPassword);
         });
     }
@@ -100,22 +100,11 @@ public class AuthService {
     private AuthResponseDto buildAuthResponse(User user) {
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
 
-        UserSummaryDto userSummary = UserSummaryDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .department(user.getDepartment())
-                .avatarInitials(user.getAvatarInitials())
-                .totalIdeas(0)
-                .approvedIdeas(0)
-                .build();
-
         return AuthResponseDto.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
                 .expiresInSeconds(jwtService.getExpirationSeconds())
-                .user(userSummary)
+                .user(ideaMapper.toUserSummary(user))
                 .build();
     }
 }
