@@ -27,6 +27,8 @@ public class ProjectRequestDto {
 
     private double budget;
 
+    private double estimatedRoi;
+
     private List<TeamMemberInputDto> teamMembers = new ArrayList<>();
 
     private List<MilestoneInputDto> milestones = new ArrayList<>();

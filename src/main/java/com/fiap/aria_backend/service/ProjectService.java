@@ -57,6 +57,7 @@ public class ProjectService {
                 .status(ProjectStatus.PLANEJAMENTO)
                 .progress(0)
                 .budget(request.getBudget())
+                .estimatedRoi(request.getEstimatedRoi())
                 .sponsorLabel(request.getSponsorLabel())
                 .strategicOrientationLabel(request.getStrategicOrientationLabel())
                 .teamMembers(teamMembers)
@@ -77,6 +78,7 @@ public class ProjectService {
         project.setSponsorLabel(request.getSponsorLabel());
         project.setStrategicOrientationLabel(request.getStrategicOrientationLabel());
         project.setBudget(request.getBudget());
+        project.setEstimatedRoi(request.getEstimatedRoi());
         project.setStartDate(LocalDate.parse(request.getStartDate()));
         project.setExpectedEndDate(LocalDate.parse(request.getExpectedEndDate()));
         project.setUpdatedAt(LocalDateTime.now());
