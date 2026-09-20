@@ -22,6 +22,5 @@ public class IdeaRequestDto {
     @NotBlank
     private String beneficios;
 
-    @NotBlank
     private String recursos;
 }
