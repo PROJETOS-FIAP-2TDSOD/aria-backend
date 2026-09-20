@@ -36,19 +36,6 @@ public class ProjectService {
     }
 
     public ProjectResponseDto create(ProjectRequestDto request, String managerId) {
-        List<ProjectTeamMember> teamMembers = request.getTeamMembers().stream()
-                .map(t -> ProjectTeamMember.builder().userId(t.getUserId()).projectRole(t.getProjectRole()).build())
-                .toList();
-
-        List<ProjectMilestone> milestones = request.getMilestones().stream()
-                .map(m -> ProjectMilestone.builder()
-                        .id(projectMapper.generateMilestoneId())
-                        .title(m.getTitle())
-                        .dueDate(LocalDate.parse(m.getDueDate()))
-                        .status(MilestoneStatus.PENDING)
-                        .build())
-                .toList();
-
         Project project = Project.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -60,8 +47,8 @@ public class ProjectService {
                 .estimatedRoi(request.getEstimatedRoi())
                 .sponsorLabel(request.getSponsorLabel())
                 .strategicOrientationLabel(request.getStrategicOrientationLabel())
-                .teamMembers(teamMembers)
-                .milestones(milestones)
+                .teamMembers(buildTeamMembers(request))
+                .milestones(buildMilestones(request))
                 .startDate(LocalDate.parse(request.getStartDate()))
                 .expectedEndDate(LocalDate.parse(request.getExpectedEndDate()))
                 .updatedAt(LocalDateTime.now())
@@ -79,11 +66,30 @@ public class ProjectService {
         project.setStrategicOrientationLabel(request.getStrategicOrientationLabel());
         project.setBudget(request.getBudget());
         project.setEstimatedRoi(request.getEstimatedRoi());
+        project.setTeamMembers(buildTeamMembers(request));
+        project.setMilestones(buildMilestones(request));
         project.setStartDate(LocalDate.parse(request.getStartDate()));
         project.setExpectedEndDate(LocalDate.parse(request.getExpectedEndDate()));
         project.setUpdatedAt(LocalDateTime.now());
 
         return toResponse(projectRepository.save(project));
+    }
+
+    private List<ProjectTeamMember> buildTeamMembers(ProjectRequestDto request) {
+        return request.getTeamMembers().stream()
+                .map(t -> ProjectTeamMember.builder().userId(t.getUserId()).projectRole(t.getProjectRole()).build())
+                .toList();
+    }
+
+    private List<ProjectMilestone> buildMilestones(ProjectRequestDto request) {
+        return request.getMilestones().stream()
+                .map(m -> ProjectMilestone.builder()
+                        .id(projectMapper.generateMilestoneId())
+                        .title(m.getTitle())
+                        .dueDate(LocalDate.parse(m.getDueDate()))
+                        .status(m.getStatus() != null ? MilestoneStatus.valueOf(m.getStatus()) : MilestoneStatus.PENDING)
+                        .build())
+                .toList();
     }
 
     // Atualização de progresso/status/ROI real — ação recorrente do gestor
