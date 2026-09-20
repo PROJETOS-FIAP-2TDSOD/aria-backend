@@ -48,6 +48,7 @@ public class ProjectRequestDto {
     @Data
     public static class MilestoneInputDto {
         private String title;
-        private String dueDate; // yyyy-MM-dd
+        private String dueDate;
+        private String status;
     }
 }
