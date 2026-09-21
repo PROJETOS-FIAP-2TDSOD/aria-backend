@@ -62,7 +62,15 @@ public class ProjectMapper {
         return users.stream()
                 .filter(u -> u.getId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Usuário não encontrado: " + userId));
+                .orElseGet(() -> User.builder()
+                        .id(userId)
+                        .name("Usuário removido")
+                        .email("")
+                        .role(UserRole.OPERADOR)
+                        .department("")
+                        .points(0)
+                        .badges(new java.util.ArrayList<>())
+                        .build());
     }
 
     private UserSummaryDto toUserSummary(User user) {
