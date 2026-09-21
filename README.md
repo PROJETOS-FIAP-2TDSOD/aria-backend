@@ -7,11 +7,28 @@ Backend da plataforma ARIA, desenvolvido para a Sprint 2 do Challenge Águia Bra
 - Spring Security + JWT (autenticação stateless)
 - Spring Data MongoDB
 - MongoDB Atlas
+- Google Gemini API (pontuação de ideias por IA)
+- Docker (deploy)
+
+## Deploy
+
+O backend está hospedado no **Render** (free tier), conectado ao **MongoDB Atlas**:
+
+```
+https://aria-backend-p7bk.onrender.com
+```
+
+O app Android (`.apk` de entrega) já consome essa URL diretamente — não é
+necessário rodar o backend localmente para testar o app.
+
+Para rodar o backend **localmente** (código-fonte anexado à entrega), siga as
+instruções abaixo.
 
 ## Pré-requisitos
 - JDK 17+
 - Maven
-- Acesso à connection string do MongoDB Atlas (solicitar à equipe)
+- Acesso à connection string do MongoDB Atlas (solicitar à equipe, ou usar as
+  credenciais já preenchidas no `application.properties` do `.zip` de entrega)
 
 ## Configuração
 
@@ -21,15 +38,34 @@ Defina as variáveis de ambiente antes de rodar:
 |---|---|
 | `MONGODB_URI` | Connection string do MongoDB Atlas |
 | `JWT_SECRET` | Chave de assinatura do JWT (opcional em dev — usa um valor padrão se não definida) |
+| `GEMINI_API_KEY` | Chave da API do Google Gemini, usada em `POST /ideas/{id}/ai-score` |
 
 - **IntelliJ:** Run → Edit Configurations → Environment variables
 - **Terminal (PowerShell):** `$env:MONGODB_URI="mongodb+srv://..."`
 
+No `.zip` de entrega, essas variáveis já vêm preenchidas com valores reais
+diretamente no `application.properties`, para que não seja necessário
+configurar nada — basta rodar. **Esse arquivo com credenciais reais nunca é
+commitado no repositório público**; a versão no GitHub usa apenas variáveis de
+ambiente (`${MONGODB_URI}`, etc.), sem nenhum valor sensível exposto.
+
 ## Como rodar
+
+**Via Maven (recomendado para desenvolvimento local):**
 ```bash
 ./mvnw spring-boot:run
 ```
 A aplicação sobe em `http://localhost:8080`.
+
+**Via Docker** (mesmo processo usado no deploy do Render):
+```bash
+docker build -t aria-backend .
+docker run -p 8080:8080 \
+  -e MONGODB_URI="sua-connection-string" \
+  -e JWT_SECRET="sua-chave" \
+  -e GEMINI_API_KEY="sua-chave" \
+  aria-backend
+```
 
 ## Autenticação
 
@@ -43,9 +79,9 @@ A API usa JWT. Fluxo:
 
 | Role | Pode fazer |
 |---|---|
-| OPERADOR | CRUD das próprias ideias; consulta projetos e orientações |
-| GESTOR | CRUD de projetos; aprova/rejeita/pontua ideias; consulta orientações |
-| LIDER | CRUD de orientações estratégicas; consulta ideias e projetos; consulta o dashboard de relatórios |
+| OPERADOR | CRUD completo das próprias ideias (incluindo exclusão); consulta projetos e orientações |
+| GESTOR | Analisa, aprova/rejeita e pontua ideias por IA; CRUD de projetos; consulta orientações |
+| LIDER | CRUD de orientações estratégicas; consulta ideias e projetos (sem criar/editar projeto); consulta o dashboard de relatórios |
 
 ### Usuários de teste
 
@@ -60,13 +96,15 @@ A API usa JWT. Fluxo:
 | Recurso | Rotas |
 |---|---|
 | Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/recover-password` |
-| Ideas | `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `PATCH /{id}/review` (GESTOR), `DELETE /{id}` |
+| Ideas | `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `PATCH /{id}/review` (GESTOR), `POST /{id}/ai-score` (GESTOR), `DELETE /{id}` (autor) |
 | Projects | `GET`, `GET /{id}`, `POST` (GESTOR), `PUT /{id}` (GESTOR), `PATCH /{id}/progress` (GESTOR), `DELETE /{id}` (GESTOR) |
 | Orientations | `GET`, `GET /{id}`, `POST` (LIDER), `PUT /{id}` (LIDER), `DELETE /{id}` (LIDER) |
 | Notifications | `GET`, `POST`, `PATCH /{id}/read`, `PATCH /read-all`, `DELETE /{id}` |
+| Users | `GET /me`, `GET`, `GET /{id}` |
 | Dashboard | `GET /dashboard/summary` (LIDER), `GET /dashboard/roi-by-strategy` (LIDER), `GET /dashboard/roi-by-project` (LIDER) |
 
-Todas as rotas (exceto `/auth/**`) exigem token válido. Especificação completa (payload/resposta) será documentada em `/docs` antes da entrega final.
+Todas as rotas (exceto `/auth/**`) exigem token válido. Especificação completa
+de payload/resposta de cada endpoint está na apresentação de entrega.
 
 ## Estrutura do projeto
 ```
@@ -82,10 +120,13 @@ com.fiap.aria_backend
 └── util         → utilitários compartilhados (formatação de moeda, cálculo de ROI)
 ```
 
-## Pendências conhecidas
-- Integração com IA (Gemini API) para pontuação de ideias
-- Cálculo de pontos/badges de gamificação no backend (hoje fica sempre zerado)
-- Integração do app Android com o backend real (troca dos mocks)
+## Diferencial de IA (Plus)
+
+Pontuação e priorização de ideias via **Google Gemini API**
+(`POST /ideas/{id}/ai-score`, restrito a GESTOR): a IA analisa título,
+categoria, descrição, problema, benefícios e recursos da ideia e retorna uma
+nota (`aiScore`) e uma justificativa textual (`aiJustification`), auxiliando o
+gestor na priorização de quais ideias avançam para projeto.
 
 ## Equipe
 - Ana Cristina dos Santos — RM 565086
