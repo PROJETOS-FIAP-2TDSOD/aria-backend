@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -115,14 +116,42 @@ public class ProjectService {
 
     private ProjectResponseDto toResponse(Project project) {
         Idea idea = ideaRepository.findById(project.getOriginIdeaId())
-                .orElseThrow(() -> new IllegalStateException("Ideia de origem não encontrada"));
+                .orElseGet(() -> deletedIdeaPlaceholder(project.getOriginIdeaId()));
         User ideaAuthor = userRepository.findById(idea.getAuthorId())
-                .orElseThrow(() -> new IllegalStateException("Autor da ideia não encontrado"));
+                .orElseGet(() -> deletedUserPlaceholder(idea.getAuthorId()));
         User manager = userRepository.findById(project.getManagerId())
-                .orElseThrow(() -> new IllegalStateException("Gestor não encontrado"));
+                .orElseGet(() -> deletedUserPlaceholder(project.getManagerId()));
         List<User> teamUsers = userRepository.findAllById(
                 project.getTeamMembers().stream().map(ProjectTeamMember::getUserId).toList());
 
         return projectMapper.toResponseDto(project, idea, ideaAuthor, manager, teamUsers);
+    }
+
+    private Idea deletedIdeaPlaceholder(String ideaId) {
+        return Idea.builder()
+                .id(ideaId)
+                .title("Ideia removida")
+                .authorId("")
+                .category(IdeaCategory.PROCESSO)
+                .description("")
+                .problema("")
+                .beneficios("")
+                .recursos("")
+                .status(IdeaStatus.EM_PROJETO)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private User deletedUserPlaceholder(String userId) {
+        return User.builder()
+                .id(userId)
+                .name("Usuário removido")
+                .email("")
+                .role(UserRole.OPERADOR)
+                .department("")
+                .points(0)
+                .badges(new ArrayList<>())
+                .build();
     }
 }
