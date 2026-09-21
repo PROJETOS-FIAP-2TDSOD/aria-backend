@@ -74,16 +74,7 @@ public class ProjectMapper {
     }
 
     private UserSummaryDto toUserSummary(User user) {
-        return UserSummaryDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .department(user.getDepartment())
-                .avatarInitials(user.getAvatarInitials())
-                .totalIdeas(0)
-                .approvedIdeas(0)
-                .build();
+        return ideaMapper.toUserSummary(user);
     }
 
     public String generateMilestoneId() {
