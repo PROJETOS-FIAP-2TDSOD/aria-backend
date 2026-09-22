@@ -21,6 +21,12 @@ https://aria-backend-p7bk.onrender.com
 O app Android (`.apk` de entrega) já consome essa URL diretamente — não é
 necessário rodar o backend localmente para testar o app.
 
+> ⚠️ **Atenção:** o plano gratuito do Render "dorme" após um período de
+> inatividade. A primeira requisição após esse intervalo pode levar até
+> ~1 minuto para responder — isso é esperado, não é um bug do backend. Se
+> for testar logo após abrir este documento, aguarde a primeira resposta
+> antes de considerar que algo falhou.
+
 Para rodar o backend **localmente** (código-fonte anexado à entrega), siga as
 instruções abaixo.
 
